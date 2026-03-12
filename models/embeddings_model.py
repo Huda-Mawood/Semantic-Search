@@ -1,7 +1,8 @@
-import cohere
+from sentence_transformers import SentenceTransformer
 from config import settings
 
-client = cohere.ClientV2(api_key=settings.COHERE_API_KEY)
+# Load model once at startup
+model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
 
 
 def embed_documents(texts: list[str]) -> list[list[float]]:
@@ -15,14 +16,8 @@ def embed_documents(texts: list[str]) -> list[list[float]]:
     Returns:
         List of embedding vectors
     """
-    response = client.embed(
-        texts=texts,
-        model="embed-v4.0",
-        input_type="search_document",
-        embedding_types=["float"]
-    )
-
-    return response.embeddings.float
+    embeddings = model.encode(texts, show_progress_bar=True)
+    return embeddings.tolist()
 
 
 def embed_query(query: str) -> list[float]:
@@ -36,11 +31,5 @@ def embed_query(query: str) -> list[float]:
     Returns:
         Single embedding vector
     """
-    response = client.embed(
-        texts=[query],
-        model="embed-v4.0",
-        input_type="search_query",
-        embedding_types=["float"]
-    )
-
-    return response.embeddings.float[0]
+    embedding = model.encode(query)
+    return embedding.tolist()

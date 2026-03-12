@@ -24,9 +24,13 @@ def extract_text_from_pdf(file_path: str) -> list[dict]:
 
     with fitz.open(str(pdf_path)) as doc:
         for page_num, page in enumerate(doc, start=1):
-            text = page.get_text().strip()
+            text = page.get_text()
 
-            if text:  # skip empty pages
+            # clean non-utf8 characters
+            text = text.encode("utf-8", errors="ignore").decode("utf-8")
+            text = text.strip()
+
+            if text:
                 pages.append({
                     "page_number": page_num,
                     "text": text
